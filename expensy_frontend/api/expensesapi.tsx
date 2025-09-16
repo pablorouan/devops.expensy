@@ -1,29 +1,36 @@
-'use client'
-import axios from "axios"
-import apiClient from "./apiclient"
-// curl -X POST http://localhost:3000/api/expenses -H "Content-Type: application/json" -d '{
-//     "name": "Groceries",
-//     "amount": 100,
-//     "category": "Food"
-//   }'
+'use client';
 
-//   curl -X GET http://localhost:3000/api/expenses -H "Content-Type: application/json"
+import apiClient from './apiclient';
 
+// Fetch all expenses
+export const fetchExpensesAPI = async (): Promise<
+  { name: string; amount: number; category: string }[]
+> => {
+  try {
+    const response = await apiClient.get('/api/expenses');
+    // Ensure we always return an array
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error('[fetchExpensesAPI] Error fetching expenses:', error);
+    return []; // Return empty array instead of throwing
+  }
+};
 
-const fetchExpensesAPI = async () => {
-   
-        const response = await apiClient.get("/api/expenses")
-       return response
-   
-    }
-
-const addExpensesAPI = async (name: string, amount: number, category: string) => {
-    const response = await apiClient.post("/api/expenses", {
-        name,
-        amount,
-        category
-    })
-    return response
-}
-
-export { fetchExpensesAPI, addExpensesAPI }
+// Add a new expense
+export const addExpensesAPI = async (
+  name: string,
+  amount: number,
+  category: string
+) => {
+  try {
+    const response = await apiClient.post('/api/expenses', {
+      name,
+      amount,
+      category,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('[addExpensesAPI] Error adding expense:', error);
+    throw error;
+  }
+};
