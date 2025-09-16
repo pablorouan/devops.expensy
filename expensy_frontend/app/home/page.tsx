@@ -59,7 +59,13 @@ export default function HomePage() {
     const fetchExpenses = async () => {
       try {
         const response = await fetchExpensesAPI(); // already returns data
-        setExpenses(response); // FIXED: no .data
+        const expensesWithId: Expense[] = response.map((expense: any, idx: number) => ({
+          id: expense.id ?? idx + 1,
+          name: expense.name,
+          amount: expense.amount,
+          category: expense.category,
+        }));
+        setExpenses(expensesWithId);
       } catch (error) {
         console.error("Error fetching expenses:", error);
       }
