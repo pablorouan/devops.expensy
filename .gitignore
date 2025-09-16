@@ -1,0 +1,65 @@
+# macOS system files
+.DS_Store
+.DS_Store?
+
+# Editors / IDE configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node.js (frontend + backend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.pnpm-store
+.pnp
+.pnp.js
+
+# Environment files (keep only examples/templates tracked)
+.env
+.env.*
+!.env.example
+!.env.template
+!.env.local.example
+
+# Build outputs and caches
+dist/
+build/
+out/
+coverage/
+.cache/
+
+# Next.js specific
+.next/
+.vercel/
+.turbo/
+.contentlayer/
+
+# TypeScript
+*.tsbuildinfo
+
+# Docker local/dev
+.docker/
+docker-compose.override.yml
+*.bak
+
+# Kubernetes generated files
+*.log
+k8s/generated/
+*.tmp
+
+# Terraform state and plan files
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfplan
+
+# Monitoring / Grafana exports (if local tmp)
+monitoring/tmp/
+
+# Misc
+Thumbs.db
