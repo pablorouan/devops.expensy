@@ -4,14 +4,11 @@ metadata:
   name: expensy-ingress
   namespace: expensy
   annotations:
-    # Use the nginx Ingress controller.  Ensure an ingress controller is
-    # installed on your AKS cluster (e.g. via `helm install nginx-ingress`).
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: expensy
 spec:
   rules:
     - http:
         paths:
-          # Route all requests beginning with /api to the backend service.
           - path: /api
             pathType: Prefix
             backend:
@@ -19,8 +16,6 @@ spec:
                 name: backend-svc
                 port:
                   number: 8706
-          # Everything else goes to the frontend service.  This ensures the
-          # web UI is served at the root of the domain.
           - path: /
             pathType: Prefix
             backend:

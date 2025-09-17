@@ -7,12 +7,6 @@ metadata:
     app: expensy
     owner: pablo
 data:
-  # Port that the backend service listens on
   PORT: "8706"
-  # Hostname of the Redis service within the cluster
   REDIS_HOST: "pablo-redis"
-  # Base URL that the frontend uses to reach the backend.  The frontend
-  # app expects this to be a relative path so that calls like `/api/expenses`
-  # will be routed correctly through an Ingress.  See the accompanying
-  # ingress.yaml for path-based routing from `/api` to the backend service.
   NEXT_PUBLIC_API_URL: "/api"
