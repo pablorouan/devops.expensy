@@ -3,9 +3,6 @@ kind: StatefulSet
 metadata:
   name: pablo-redis
   namespace: expensy
-  labels:
-    app: pablo-redis
-    owner: pablo
 spec:
   serviceName: pablo-redis
   replicas: 1
@@ -16,44 +13,41 @@ spec:
     metadata:
       labels:
         app: pablo-redis
-        owner: pablo
     spec:
       containers:
-        - name: redis
-          image: redis:7
-          command: ["sh", "-c", "redis-server --requirepass ${REDIS_PASSWORD}"]
-          ports:
-            - containerPort: 6379
-          env:
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: expensy-secrets
-                  key: REDIS_PASSWORD
-          volumeMounts:
-            - name: redis-data
-              mountPath: /data
+      - name: redis
+        image: redis:7
+        command: ["sh", "-c", "redis-server --requirepass ${REDIS_PASSWORD}"]
+        ports:
+        - containerPort: 6379
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: expensy-secrets
+              key: REDIS_PASSWORD
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
   volumeClaimTemplates:
-    - metadata:
-        name: redis-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: managed-premium   # <-- specify your cluster's SC
+      resources:
+        requests:
+          storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: pablo-redis
   namespace: expensy
-  labels:
-    app: pablo-redis
-    owner: pablo
 spec:
   type: ClusterIP
   ports:
-    - port: 6379
-      targetPort: 6379
+  - port: 6379
+    targetPort: 6379
   selector:
     app: pablo-redis

@@ -3,9 +3,6 @@ kind: StatefulSet
 metadata:
   name: pablo-mongo
   namespace: expensy
-  labels:
-    app: pablo-mongo
-    owner: pablo
 spec:
   serviceName: pablo-mongo
   replicas: 1
@@ -16,47 +13,44 @@ spec:
     metadata:
       labels:
         app: pablo-mongo
-        owner: pablo
     spec:
       containers:
-        - name: mongo
-          image: mongo:6
-          ports:
-            - containerPort: 27017
-          env:
-            - name: MONGO_INITDB_ROOT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: expensy-secrets
-                  key: MONGO_INITDB_ROOT_USERNAME
-            - name: MONGO_INITDB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: expensy-secrets
-                  key: MONGO_INITDB_ROOT_PASSWORD
-          volumeMounts:
-            - name: mongo-data
-              mountPath: /data/db
+      - name: mongo
+        image: mongo:6
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: expensy-secrets
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: expensy-secrets
+              key: MONGO_INITDB_ROOT_PASSWORD
+        volumeMounts:
+        - name: mongo-data
+          mountPath: /data/db
   volumeClaimTemplates:
-    - metadata:
-        name: mongo-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
+  - metadata:
+      name: mongo-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: managed-premium   # <-- specify storage class
+      resources:
+        requests:
+          storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: pablo-mongo
   namespace: expensy
-  labels:
-    app: pablo-mongo
-    owner: pablo
 spec:
   ports:
-    - port: 27017
-      targetPort: 27017
+  - port: 27017
+    targetPort: 27017
   selector:
     app: pablo-mongo

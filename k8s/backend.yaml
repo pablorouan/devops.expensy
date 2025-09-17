@@ -45,14 +45,10 @@ kind: Service
 metadata:
   name: backend-svc
   namespace: expensy
-  labels:
-    app: backend
-    owner: pablo
 spec:
-  type: ClusterIP
+  type: LoadBalancer   # <-- was ClusterIP
   ports:
-    - name: http
-      port: 8706
-      targetPort: 8706
+  - port: 8706
+    targetPort: 8706
   selector:
     app: backend
