@@ -7,6 +7,11 @@ metadata:
     app: expensy
     owner: pablo
 data:
+  # Port that the backend service listens on
   PORT: "8706"
+  # Hostname of the Redis service within the cluster
   REDIS_HOST: "pablo-redis"
-  NEXT_PUBLIC_API_URL: "/api"
+  # Base URL that the frontend uses to reach the backend.  Using the
+  # internal service name and port ensures requests stay inside the
+  # cluster and don’t rely on hard‑coded IP addresses.
+  NEXT_PUBLIC_API_URL: "http://backend-svc:8706"

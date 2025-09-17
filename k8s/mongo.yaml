@@ -7,7 +7,7 @@ metadata:
     app: pablo-mongo
     owner: pablo
 spec:
-  serviceName: "pablo-mongo"
+  serviceName: pablo-mongo
   replicas: 1
   selector:
     matchLabels:
@@ -19,24 +19,32 @@ spec:
         owner: pablo
     spec:
       containers:
-      - name: mongo
-        image: mongo:6
-        ports:
-        - containerPort: 27017
-        envFrom:
-        - secretRef:
-            name: expensy-secrets
-        volumeMounts:
-        - name: mongo-data
-          mountPath: /data/db
+        - name: mongo
+          image: mongo:6
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: expensy-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: expensy-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
   volumeClaimTemplates:
-  - metadata:
-      name: mongo-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 1Gi
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -48,7 +56,7 @@ metadata:
     owner: pablo
 spec:
   ports:
-  - port: 27017
+    - port: 27017
+      targetPort: 27017
   selector:
     app: pablo-mongo
-

@@ -7,7 +7,7 @@ metadata:
     app: pablo-redis
     owner: pablo
 spec:
-  serviceName: "pablo-redis"
+  serviceName: pablo-redis
   replicas: 1
   selector:
     matchLabels:
@@ -19,25 +19,30 @@ spec:
         owner: pablo
     spec:
       containers:
-      - name: redis
-        image: redis:7
-        command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
-        ports:
-        - containerPort: 6379
-        envFrom:
-        - secretRef:
-            name: expensy-secrets
-        volumeMounts:
-        - name: redis-data
-          mountPath: /data
+        - name: redis
+          image: redis:7
+          # Start redis with password authentication.  The password is
+          # pulled from the expensy-secrets secret via an env var.
+          command: ["sh", "-c", "redis-server --requirepass ${REDIS_PASSWORD}"]
+          ports:
+            - containerPort: 6379
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: expensy-secrets
+                  key: REDIS_PASSWORD
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
   volumeClaimTemplates:
-  - metadata:
-      name: redis-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 1Gi
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -48,9 +53,9 @@ metadata:
     app: pablo-redis
     owner: pablo
 spec:
-  type: ClusterIP   # ✅ only used inside cluster
+  type: ClusterIP
   ports:
-  - port: 6379
-    targetPort: 6379
+    - port: 6379
+      targetPort: 6379
   selector:
     app: pablo-redis
