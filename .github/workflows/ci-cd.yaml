@@ -86,7 +86,7 @@ jobs:
 
       - name: Apply Kubernetes Secrets
         run: |
-          kubectl apply -f k8s/expensy-secrets.yaml
+          kubectl apply -f k8s/secrets.yaml
 
       - name: Deploy manifests
         run: |
