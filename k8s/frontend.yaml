@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pablo-frontend
+  namespace: expensy
+  labels:
+    app: frontend
+    owner: pablo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        owner: pablo
+    spec:
+      containers:
+      - name: frontend
+        image: docker.io/prouan/expensy-frontend:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: expensy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  namespace: expensy
+  labels:
+    app: frontend
+    owner: pablo
+spec:
+  type: LoadBalancer   # ✅ rollback: expose publicly without Ingress
+  ports:
+  - port: 80           # ✅ expose on port 80 for browser access
+    targetPort: 3000   # container listens on 3000
+  selector:
+    app: frontend

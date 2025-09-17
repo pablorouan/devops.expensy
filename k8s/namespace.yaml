@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: expensy
+  labels:
+    app: expensy
+    owner: pablo
+

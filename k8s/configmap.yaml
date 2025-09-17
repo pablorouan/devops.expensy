@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: expensy-config
+  namespace: expensy
+  labels:
+    app: expensy
+    owner: pablo
+data:
+  PORT: "8706"
+  REDIS_HOST: "pablo-redis"
+  NEXT_PUBLIC_API_URL: "/api"

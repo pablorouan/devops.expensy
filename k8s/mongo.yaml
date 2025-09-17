@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pablo-mongo
+  namespace: expensy
+  labels:
+    app: pablo-mongo
+    owner: pablo
+spec:
+  serviceName: "pablo-mongo"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pablo-mongo
+  template:
+    metadata:
+      labels:
+        app: pablo-mongo
+        owner: pablo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:6
+        ports:
+        - containerPort: 27017
+        envFrom:
+        - secretRef:
+            name: expensy-secrets
+        volumeMounts:
+        - name: mongo-data
+          mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pablo-mongo
+  namespace: expensy
+  labels:
+    app: pablo-mongo
+    owner: pablo
+spec:
+  ports:
+  - port: 27017
+  selector:
+    app: pablo-mongo
+
