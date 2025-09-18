@@ -1,29 +1,28 @@
-# ---- Build stage: compile TypeScript to JS ----
-FROM node:20-alpine AS build
+# Dockerfile.frontend
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install all deps (incl. devDeps for tsc)
-COPY package*.json ./
+# Copy package files and install
+COPY expensy_frontend/package*.json ./
 RUN npm ci
 
-# Copy source and build (expects "build": "tsc" in package.json)
-COPY . .
+# Copy source
+COPY expensy_frontend/ ./
+
+# Build Next.js app (inject API URL at build time)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-# ---- Runtime stage: slim image with prod deps only ----
+# Production image
 FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV=production
 
-# Install only production deps
-COPY package*.json ./
-RUN npm ci --omit=dev
+# Copy only what is needed
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
-# Copy compiled JS only
-COPY --from=build /app/dist ./dist
-
-# App listens on 8706
-EXPOSE 8706
-
-# Run compiled server
-CMD ["node", "dist/server.js"]
+EXPOSE 3000
+CMD ["npm", "start"]
