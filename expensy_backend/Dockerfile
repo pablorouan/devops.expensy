@@ -7,7 +7,7 @@ COPY expensy_frontend/package*.json ./
 RUN npm ci
 
 # Copy source
-COPY expensy_frontend/ ./
+COPY . .
 
 # Build Next.js app (inject API URL at build time)
 ARG NEXT_PUBLIC_API_URL
