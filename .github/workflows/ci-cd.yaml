@@ -69,7 +69,7 @@ jobs:
           tags: docker.io/prouan/expensy-backend:latest
 
   deploy:
-    #needs: docker
+    needs: docker
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
