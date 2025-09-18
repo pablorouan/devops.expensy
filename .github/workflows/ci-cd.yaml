@@ -36,8 +36,8 @@ jobs:
     needs: build-test
     runs-on: ubuntu-latest
     outputs:
-      frontend_tag: docker.io/prouan/expensy-frontend:${{ github.sha }}
-      backend_tag: docker.io/prouan/expensy-backend:${{ github.sha }}
+      frontend_tag: ${{ steps.export-tags.outputs.frontend_tag }}
+      backend_tag: ${{ steps.export-tags.outputs.backend_tag }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -74,6 +74,13 @@ jobs:
           tags: |
             docker.io/prouan/expensy-backend:latest
             docker.io/prouan/expensy-backend:${{ github.sha }}
+
+      # Export tags as job outputs
+      - name: Export image tags
+        id: export-tags
+        run: |
+          echo "frontend_tag=docker.io/prouan/expensy-frontend:${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "backend_tag=docker.io/prouan/expensy-backend:${{ github.sha }}" >> $GITHUB_OUTPUT
 
   deploy:
     needs: docker
