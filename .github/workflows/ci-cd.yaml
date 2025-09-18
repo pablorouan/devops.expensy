@@ -7,33 +7,33 @@ on:
     branches: [ main ]
 
 jobs:
-  # build-test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-  #     # Frontend build test
-  #     - name: Install & Build Frontend
-  #       working-directory: ./expensy_frontend
-  #       run: |
-  #         npm ci
-  #         NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
+      # Frontend build test (uses secret API URL for backend reachability)
+      - name: Install & Build Frontend
+        working-directory: ./expensy_frontend
+        run: |
+          npm ci
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
 
-  #     # Backend build test
-  #     - name: Install & Build Backend
-  #       working-directory: ./expensy_backend
-  #       run: |
-  #         npm ci
-  #         npm run build
+      # Backend build test
+      - name: Install & Build Backend
+        working-directory: ./expensy_backend
+        run: |
+          npm ci
+          npm run build
 
   docker:
-    #needs: build-test
+    needs: build-test   # 👈 ensure build-test passes first
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -48,7 +48,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Build & push frontend
+      # Build & push frontend (inject API URL again during image build)
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v5
         with:
@@ -74,7 +74,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
 
       - name: Log in to Azure
         uses: azure/login@v2
@@ -105,6 +104,5 @@ jobs:
         run: |
           kubectl apply -f k8s/backend.yaml -n expensy
           kubectl apply -f k8s/frontend.yaml -n expensy
-          # Update images to latest pushed versions
           kubectl -n expensy set image deployment/pablo-backend backend=docker.io/prouan/expensy-backend:latest
           kubectl -n expensy set image deployment/pablo-frontend frontend=docker.io/prouan/expensy-frontend:latest
