@@ -1,40 +1,31 @@
-# Base image
-FROM node:20-alpine AS builder
+# Step 1: Use an official Node.js image as the base image
+FROM node:18-alpine
 
-# Set working directory
+# Step 2: Set the working directory in the container
 WORKDIR /app
 
-# Accept the API URL as a build argument
-# ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=http://4.156.159.246:8706
+# Step 3: Copy package.json and package-lock.json (or yarn.lock) first for efficient caching
+COPY package.json package-lock.json ./
 
-# Install dependencies
-COPY package*.json ./
+# Step 4: Install the dependencies
+RUN npm install
 
-# Copy lockfile if present
-COPY package-lock.json* ./
-
-# Use npm ci if lockfile exists, otherwise fallback to npm install
-RUN if [ -f package-lock.json ]; then npm ci; else npm install --legacy-peer-deps; fi
-
-# Copy source code
+# Step 5: Copy the rest of the application code
 COPY . .
 
-# Build Next.js app (will use NEXT_PUBLIC_API_URL)
+# Step 6: Set the API URL that will be embedded into the frontend
+
+# Define build arg
+ARG NEXT_PUBLIC_API_URL
+
+# Make it available as an environment variable . This ensures NEXT_PUBLIC_API_URL is injected at build time and available during npm run build
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Step 7: Build the Next.js app (production build)
 RUN npm run build
 
-# ---- Production Image ----
-FROM node:20-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-# Copy only necessary files
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-
+# Step 8: Expose the port that Next.js will run on
 EXPOSE 3000
 
+# Step 9: Start the Next.js app
 CMD ["npm", "start"]
