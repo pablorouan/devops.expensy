@@ -10,7 +10,12 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci
+
+# Copy lockfile if present
+COPY package-lock.json* ./
+
+# Use npm ci if lockfile exists, otherwise fallback to npm install
+RUN if [ -f package-lock.json ]; then npm ci; else npm install --legacy-peer-deps; fi
 
 # Copy source code
 COPY . .
