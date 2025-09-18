@@ -23,7 +23,7 @@ jobs:
         working-directory: ./expensy_frontend
         run: |
           npm ci
-          npm run build
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
 
       # Backend (Node/Express in expensy_backend)
       - name: Install & Build Backend
@@ -56,6 +56,8 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/expensy-frontend:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
