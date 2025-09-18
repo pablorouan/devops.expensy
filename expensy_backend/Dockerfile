@@ -1,28 +1,15 @@
 # Dockerfile.frontend
-FROM node:20-alpine AS builder
-WORKDIR /app
-
-# Copy package files and install
-COPY package*.json ./
-RUN npm ci
-
-# Copy source
-COPY . .
-
-# Build Next.js app (inject API URL at build time)
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build
-
-# Production image
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy only what is needed
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# Copy source and package files
+COPY . .
 
-EXPOSE 3000
+RUN npm install
+
+# Build because this is TypeScript
+RUN npm run build
+
+# Expose port and run server
+EXPOSE 8706
 CMD ["npm", "start"]
