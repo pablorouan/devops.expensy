@@ -35,6 +35,9 @@ jobs:
   docker:
     needs: build-test
     runs-on: ubuntu-latest
+    outputs:
+      frontend_tag: docker.io/prouan/expensy-frontend:${{ github.sha }}
+      backend_tag: docker.io/prouan/expensy-backend:${{ github.sha }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -72,11 +75,6 @@ jobs:
             docker.io/prouan/expensy-backend:latest
             docker.io/prouan/expensy-backend:${{ github.sha }}
 
-      - name: Export image tags
-        run: |
-          echo "FRONTEND_TAG=docker.io/prouan/expensy-frontend:${{ github.sha }}" >> $GITHUB_ENV
-          echo "BACKEND_TAG=docker.io/prouan/expensy-backend:${{ github.sha }}" >> $GITHUB_ENV
-
   deploy:
     needs: docker
     runs-on: ubuntu-latest
@@ -113,5 +111,7 @@ jobs:
         run: |
           kubectl apply -f k8s/backend.yaml -n expensy
           kubectl apply -f k8s/frontend.yaml -n expensy
-          kubectl -n expensy set image deployment/pablo-backend backend=$BACKEND_TAG
-          kubectl -n expensy set image deployment/pablo-frontend frontend=$FRONTEND_TAG
+          kubectl -n expensy set image deployment/pablo-backend backend=${{ needs.docker.outputs.backend_tag }}
+          kubectl -n expensy set image deployment/pablo-frontend frontend=${{ needs.docker.outputs.frontend_tag }}
+          kubectl -n expensy rollout status deployment/pablo-backend
+          kubectl -n expensy rollout status deployment/pablo-frontend
