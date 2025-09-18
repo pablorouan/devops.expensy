@@ -1,157 +1,151 @@
-<!-- Final Project: End-to-End DevOps Deployment -->
+# 💸 Expensy – End-to-End DevOps Project
 
-## Lesson Overview :pencil2:
+Expensy is a full-stack **expense tracker app** built with **Next.js (frontend)** and **Node/Express (backend)**, backed by **MongoDB** and **Redis**.  
+This project demonstrates a complete **DevOps lifecycle**: containerization, CI/CD, orchestration on Azure AKS, monitoring, and security practices.
 
-In this project, we will focus on the hands-on implementation of the learnings throughout this program, where you will gain practical insights while setting up the entire DevOps cycle and deploying applications using acquired best practices. 
+---
 
-<br>
+## 🚀 Project Overview
 
-## Learning Objectives :notebook:
+- **Frontend**: Next.js application (React-based UI).
+- **Backend**: Node/Express API.
+- **Database**: MongoDB for expense data.
+- **Cache**: Redis for fast lookups.
+- **Deployment**: Azure Kubernetes Service (AKS).
+- **CI/CD**: GitHub Actions pipeline for build → test → Docker build → push → deploy.
+- **Monitoring**: Prometheus & Grafana dashboards for pod health + custom app metrics.
 
-By the end of this project, you will: 
+---
 
-1. Apply DevOps practices to a real-world project in a production environment.
-2. Build an effective CI/CD pipeline to automate delivery.
-3. Automate provisioning, configuration and infrastructure management using Terraform and Ansible. 
-4. Deploy and manage containerized applications using Kubernetes. 
-5. Integrate applications with Managed Kubernetes Service and other cloud services
-6. Set up monitoring and create dashboards using Grafana and Prometheus
-7. Resolve issues arising during the entire cycle using best practices
+## 🛠️ Local Development
 
-<br>
+### Prerequisites
+- Node.js 20+
+- Docker Desktop
+- MongoDB & Redis containers
 
-## Project Highlights :key:
+### Start Databases
+```bash
+# MongoDB
+docker run --name mongo -d -p 27017:27017   -e MONGO_INITDB_ROOT_USERNAME=root   -e MONGO_INITDB_ROOT_PASSWORD=example   mongo:latest
 
-### Product Management:
+# Redis
+docker run --name redis -d -p 6379:6379   redis:latest redis-server --requirepass someredispassword
+```
 
-1. This capstone project is a team project, where you will assume roles and work as a scrum team. 
-2. The following indicators will be helpful for the successful completion of your project:         
-    - The duration of one Sprint Cycle is 5 days. So, you will have three Sprint Cycles for this project.
-    - Start with identifying a Scrum Master within your team.
-    - Make sure to follow all scrum events like Sprint, Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospection.
-    - Plan a Sprint Review at the end of every Sprint Cycle.
-3. Your instructor will be the product owner. If you have any questions regarding the requirements or deliverables, you can address them to the Product Owner.
-4. **Suggestion:** Start with a Team Agreement 
-    - Decide your working hours
-    - Decide your definition of done
-    - Decide your team’s way of work
-    - Identify the time when you will have your scrum events like daily scrum, sprint review, and other scrum events 
-5. We will make use of Azure Boards (or JIRA boards or any other similar tool) to manage work
-6. Please ensure that you have your Daily Scrum and evening sync-up (daily retrospective) every day.
-7. The final sprint review and respective presentations will be held on the last day of the project (during the second half).
+### Backend
+```bash
+cd expensy_backend
+npm ci
+npm run dev
+```
 
-<br>
+### Frontend
+```bash
+cd expensy_frontend
+npm ci
+NEXT_PUBLIC_API_URL=http://localhost:8706 npm run dev
+```
 
-### Pre-requisites
+App will be available at **http://localhost:3000**
 
-1. You can use any cloud of your choice (AWS, Azure or Hybrid). Make sure to have an account with free-trial or an account with enough credit.
-2. Create a free account on the DockerHub registry. This account will be used to host docker images used in the project
+---
 
-### Web Application Introduction
+## 🐳 Containerization
 
-This sample application is an Expense Tracker with four microservices, a backend built in node, frontend built with Next.js (Node based framework), along with a MongoDB database and Redis caching DB.
+Each service has its own Dockerfile:
 
-[Clone this repository and share it with the team](https://github.com/saurabhd2106/devops-final-project.git)
+- `expensy_backend/Dockerfile`
+- `expensy_frontend/Dockerfile`
 
-Your task is to build a solution for this application that is scalable and can support zero to thousands of users. 
+### Build & Run Locally
+```bash
+docker build -t prouan/expensy-backend ./expensy_backend
+docker build -t prouan/expensy-frontend ./expensy_frontend
 
-### Make sure to use the following:
+docker-compose up
+```
 
-#### 1. Infrastructure as Code (IaC):
+(Optional) `docker-compose.yaml` helps run backend + frontend + DBs.
 
-- Use Terraform, AWS CloudFormation, or another IaC tool to define your infrastructure.
+---
 
-#### 2. Your infrastructure should include:
+## ⚙️ CI/CD Pipeline
 
-- Compute resources (e.g., EC2 instances, Kubernetes clusters).
-- Networking resources (e.g., VPC, subnets, security groups).
-- Storage resources (e.g., S3 buckets, RDS instances).
-- Continuous Integration/Continuous Deployment (CI/CD):
+CI/CD workflow is defined in  
+`.github/workflows/ci-cd.yaml`
 
-#### 3. Implement a CI/CD pipeline using tools such as Jenkins, GitLab CI, or GitHub Actions.
+Stages:
+1. **Build & Test** (frontend & backend)  
+2. **Docker Build & Push** to Docker Hub (`prouan/expensy-*`)  
+3. **Deploy to AKS** (namespace: `expensy`) using `kubectl apply`  
 
-The pipeline should:
-- Automatically build and test your application.
-- Deploy the application to a staging environment.
-- Deploy to production upon approval.
+Secrets in GitHub Actions:
+- `NEXT_PUBLIC_API_URL`
+- `KUBECONFIG`
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`
 
-#### 4. Containerization and Orchestration:
-- Containerize your application using Docker.
-- Use Kubernetes or Docker Swarm for orchestration to ensure your application can scale horizontally.
+---
 
-#### 5. Monitoring and Logging:
+## ☸️ Kubernetes Deployment (AKS)
 
-- Implement monitoring using tools like Prometheus, Grafana, or AWS CloudWatch.
+Manifests located in `k8s/`:
+- `backend.yaml`
+- `frontend.yaml`
 
-#### 6. Autoscaling:
+Apply manifests:
+```bash
+kubectl apply -f k8s/backend.yaml -n expensy
+kubectl apply -f k8s/frontend.yaml -n expensy
+```
 
-- Configure autoscaling for your compute resources (e.g., AWS Auto Scaling groups, Kubernetes Horizontal Pod Autoscaler) to handle varying loads.
+Services:
+- Backend: LoadBalancer → `http://<backend-ip>:8706`
+- Frontend: LoadBalancer → `http://<frontend-ip>:80`
 
-#### 7. Security and Compliance:
+---
 
-- Implement best security practices, including network security (firewalls, security groups), data encryption, and IAM policies.
-- Ensure compliance with relevant standards (e.g., GDPR, HIPAA) as applicable.
+## 📊 Monitoring
 
-### Deliverables:
+Deployed in `monitoring/` namespace:
+- **Prometheus** (scrapes pod metrics + app metrics `/metrics` endpoint).  
+- **Grafana** (LoadBalancer service, external IP exposed).  
 
-#### 1. Infrastructure Code:
+Dashboards:
+- Pod health (CPU, memory, restarts).  
+- App metrics: total expenses recorded.  
 
-- Provide all IaC scripts and configuration files like Terraform scripts, AWS CloudFormation templates, Ansible playbooks, etc.
-- Include documentation explaining the infrastructure setup and how to deploy it.
+---
 
-#### 2. CI/CD Pipeline Configuration:
+## 🔐 Security & Compliance
 
-- Provide the CI/CD pipeline configuration files like Jenkinsfile, GitHub Actions workflows, etc.
-- Include detailed documentation on how to set up and use the pipeline.
+See [SECURITY.md](./SECURITY.md) for details.
 
-#### 3. Application Containerization and Orchestration:
+Key points:
+- Secrets stored in GitHub Actions + Kubernetes Secrets.  
+- RBAC + namespace isolation.  
+- NSGs restrict inbound traffic.  
+- Data encrypted at rest by Azure.  
+- TLS planned but not yet implemented.  
 
-- Provide Dockerfiles and Kubernetes/Docker Swarm configuration files.
-- Include documentation on how to build and deploy the containers.
+---
 
-#### 4. Monitoring and Logging Configuration:
+## 📂 Repository Structure
+```
+devops.expensy/
+├── expensy_frontend/      # Next.js frontend
+├── expensy_backend/       # Node/Express backend
+├── k8s/                   # Kubernetes manifests
+├── monitoring/            # Prometheus & Grafana configs
+├── .github/workflows/     # CI/CD pipeline
+├── SECURITY.md
+└── README.md
+```
 
-- Provide configuration files for monitoring and logging tools, including Prometheus configuration, Grafana dashboards, ELK stack configuration, etc.
-- Include documentation on how to set up and interpret the monitoring and logging data.
+---
 
-#### 5. Autoscaling Configuration:
+## 📝 Credits
 
-- Provide configuration files or scripts for autoscaling.
-- Include documentation explaining the autoscaling policies, criteria for scaling, how to simulate load to test autoscaling, commands to check the current scaling status, etc. 
-
-#### 6. Security and Compliance Documentation:
-
-- Provide a security overview document detailing the measures implemented.
-- Include compliance checklists and how your solution adheres to them.
-
-### Evaluation Criteria:
-
-1. Scalability:
-
-- The solution should handle increasing loads efficiently.
-- Autoscaling should work as expected, without degrading performance.
-- Infrastructure should be able to scale horizontally (adding more instances) or vertically (upgrading existing instances) as needed.
-
-2. Reliability:
-
-- The CI/CD pipeline should deploy the application without errors.
-- Monitoring and logging should provide useful insights into the application’s health.
-- The pipeline should be ready for smooth integration of new code and features.
-
-3. Security:
-
-- The solution should follow best security practices.
-- Compliance with relevant standards should be documented.
-
-4. Documentation:
-
-- The documentation should be clear and comprehensive documentation for each component.
-- Ease of understanding and reproducibility must be considered while documenting all components. 
-
-<!-- ## Additional Resources :clipboard: 
-
-If you would like to study these concepts before the class or would benefit from some remedial studying, please utilize the resources below: -->
-
-<br>
-
-**Good luck!**
+Developed by **Pablo Rouan**  
+Ironhack DevOps Bootcamp – Final Project 2025

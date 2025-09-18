@@ -9,5 +9,5 @@ metadata:
 data:
   PORT: "8706"
   REDIS_HOST: "pablo-redis"
-  NEXT_PUBLIC_API_URL: "http://4.156.159.246:8706"
-  # or replace with external LB IP/DNS after apply
+  NEXT_PUBLIC_API_URL: "http://4.157.177.213:8706"
+  # replace with your backend LB IP or DNS

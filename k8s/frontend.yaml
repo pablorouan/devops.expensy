@@ -25,6 +25,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: expensy-config
+          # Uncomment if you want probes:
           # readinessProbe:
           #   httpGet:
           #     path: /
@@ -49,7 +50,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - port: 80
-      targetPort: 8706
+    - port: 80        # external LB port
+      targetPort: 8706 # forwards to containerPort
+      protocol: TCP
   selector:
     app: frontend
