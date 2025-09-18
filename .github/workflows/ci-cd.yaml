@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '20'
 
-      # Frontend build test
+      # Frontend build test (uses secret API URL for backend reachability)
       - name: Install & Build Frontend
         working-directory: ./expensy_frontend
         run: |
@@ -33,11 +33,8 @@ jobs:
           npm run build
 
   docker:
-    needs: build-test
+    needs: build-test   # 👈 ensure build-test passes first
     runs-on: ubuntu-latest
-    outputs:
-      frontend_tag: ${{ steps.export-tags.outputs.frontend_tag }}
-      backend_tag: ${{ steps.export-tags.outputs.backend_tag }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -51,7 +48,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Build & push frontend
+      # Build & push frontend (inject API URL again during image build)
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v5
         with:
@@ -60,9 +57,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-          tags: |
-            docker.io/prouan/expensy-frontend:latest
-            docker.io/prouan/expensy-frontend:${{ github.sha }}
+          tags: docker.io/prouan/expensy-frontend:latest
 
       # Build & push backend
       - name: Build & Push Backend Image
@@ -71,16 +66,7 @@ jobs:
           context: ./expensy_backend
           file: ./expensy_backend/Dockerfile
           push: true
-          tags: |
-            docker.io/prouan/expensy-backend:latest
-            docker.io/prouan/expensy-backend:${{ github.sha }}
-
-      # Export tags as job outputs
-      - name: Export image tags
-        id: export-tags
-        run: |
-          echo "frontend_tag=docker.io/prouan/expensy-frontend:${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "backend_tag=docker.io/prouan/expensy-backend:${{ github.sha }}" >> $GITHUB_OUTPUT
+          tags: docker.io/prouan/expensy-backend:latest
 
   deploy:
     needs: docker
@@ -118,7 +104,5 @@ jobs:
         run: |
           kubectl apply -f k8s/backend.yaml -n expensy
           kubectl apply -f k8s/frontend.yaml -n expensy
-          kubectl -n expensy set image deployment/pablo-backend backend=${{ needs.docker.outputs.backend_tag }}
-          kubectl -n expensy set image deployment/pablo-frontend frontend=${{ needs.docker.outputs.frontend_tag }}
-          kubectl -n expensy rollout status deployment/pablo-backend
-          kubectl -n expensy rollout status deployment/pablo-frontend
+          kubectl -n expensy set image deployment/pablo-backend backend=docker.io/prouan/expensy-backend:latest
+          kubectl -n expensy set image deployment/pablo-frontend frontend=docker.io/prouan/expensy-frontend:latest
