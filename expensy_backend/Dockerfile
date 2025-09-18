@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files and install
-COPY expensy_frontend/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
 # Copy source
