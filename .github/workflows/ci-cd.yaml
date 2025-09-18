@@ -52,13 +52,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./expensy_frontend
-          file: ./expensy_frontend/Dockerfile.frontend
           push: true
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
           tags: |
-            docker.io/prouan/expensy-frontend:latest
-
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/expensy-frontend:latest
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
         with:
