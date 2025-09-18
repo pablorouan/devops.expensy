@@ -57,7 +57,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/expensy-frontend:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_API_URL=http://4.156.159.246
 
       - name: Build & Push Backend
         uses: docker/build-push-action@v5
