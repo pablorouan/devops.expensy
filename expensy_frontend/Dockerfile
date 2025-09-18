@@ -5,8 +5,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Accept the API URL as a build argument
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=http://4.156.159.246:8706
 
 # Install dependencies
 COPY package*.json ./
